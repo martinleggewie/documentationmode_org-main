@@ -1,0 +1,189 @@
+#+TITLE: Org Mode configuration to be used in the context of the documentationmode tutorial, defined in an Org file
+
+* Org specific settings
+
+This literate programming styled document focuses on the Emacs Org mode configuration.
+Literate programming means here: The documentation but also the actual configuration is located in one document.
+And of course, the type of this document is an Org file, thus making it completely meta.
+
+** Activate some recommended keyboard shortcuts for Org
+
+This is one of my bigger critics about Emacs:
+If you need to use keyboard shortcuts all the time, why on earth do you need to spent so much time in the configuration?
+Ok, some configuration settings are really special, and not everyone needs them.
+But the basic shortcuts for - for example Org - should be setup out-of-the-box.
+
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-c l") 'org-store-link)
+  (global-set-key (kbd "C-c a") 'org-agenda)
+  (global-set-key (kbd "C-c c") 'org-capture)
+#+END_SRC
+
+** Activate a nicer way of indenting Org files
+Following setting will indent the normal text in the same way as the heading the text belongs to.
+Each subheading will also be indented, and instead of showing all asterisks, Emacs will just show one indented asterisk.
+Analogously, text belonging to a list is also indented.
+
+Keep in mind, though, that this setting is only affecting how Emacs shows the text - it does not really insert any whitespace.
+#+BEGIN_SRC emacs-lisp
+  (setq org-startup-indented t)
+#+END_SRC
+
+** Activate tab key when editing code inside a source block
+With the following setting you can use the tab key inside a source block to indent the text.
+#+BEGIN_SRC emacs-lisp
+  (setq org-src-tab-acts-natively t)
+#+END_SRC
+Apparently, the normal way of editing source code inside a code block is "C-c '" to enter some kind of special source code editing mode.
+In this mode the tab character can be used to indent text.
+
+** Configure that the date picker starts with Monday
+By default, the date picker has Sunday as the first day of the week.
+The following setting changes this so that it starts with Monday.
+#+BEGIN_SRC emacs-lisp
+  (setq calendar-week-start-day 1)
+#+END_SRC
+
+** Define position of tags
+When assigning tags to Org entries, we need to find a compromise between having them placed far enough from the entry's text but not so far that a line break happens and the tag is shown in the next line.
+As it turned out - without writing some Lisp functions - you cannot have it aligned to the right of the window.
+So we need to find a good compromise.
+And as it also turned out, you need to configure this for Org files separately from Org agenda view.
+#+BEGIN_SRC emacs-lisp
+  (setq org-tags-column 80)
+  (setq org-agenda-tags-column 80)
+#+END_SRC
+
+** Configure that Emacs uses system defaults applications when opening an attached file
+#+BEGIN_SRC emacs-lisp
+  (if (eq system-type 'darwin)
+    (cond ((boundp 'org-file-apps-macos) (setq org-file-apps org-file-apps-macos))
+          ((boundp 'org-file-apps-defaults-macosx) (setq org-file-apps org-file-apps-defaults-macosx))
+    )
+  )
+  (if (eq system-type 'windows-nt)
+    (setq org-file-apps org-file-apps-defaults-windowsnt)
+  )
+#+END_SRC
+
+** Define the "universe" for Org files and folders 
+#+BEGIN_SRC emacs-lisp
+
+  (setq org-agenda-files (quote ("~/org/main"
+                                 "~/org/personal")))
+#+END_SRC
+
+** Define the various process states and their transitions
+#+BEGIN_SRC emacs-lisp
+  (setq org-todo-keywords
+        (quote (
+                (sequence "TODO" "INPROGRESS" "WAITING" "|" "DONE" "CANCELLED")
+                (sequence "PREPAREMEETING" "MEETING")
+                (sequence "KNOWHOW")
+                (sequence "WORK" "WORKDONE")
+                (sequence "JOURNAL")
+                )
+               )
+        )
+#+END_SRC
+
+** Define the set of capture templates
+
+This section requires two variables to be set in a personal configuration:
+
+* (setq org-default-notes-file "<path to your refile file>")
+* (setq org-default-journal-file "<path to your journal file>")
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-capture-templates
+        (quote (
+                ("t" "todo" entry (file org-default-notes-file)
+                 "* TODO %?\nDEADLINE: %^{Deadline}t\nAuthor: %n\nCreated on: %U\nLinks: %a\nDescription:\n- What needs to be done?\n- Result:\n- Next steps:")
+
+                ("p" "preparation for a meeting" entry (file org-default-notes-file)
+                 "* PREPAREMEETING %? %<%Y-%m-%d>\nDate: %^{Deadline}t\nAuthor: %n\nParticipants: (at least one other person), %n\nDescription:\n- Goal of the meeting:\n- The meeting:\n- Next steps:")
+
+                ("m" "meeting" entry (file org-default-notes-file)
+                 "* MEETING %? %<%Y-%m-%d>\nDate: %t\nAuthor: %n\nParticipants: (at least one other person), %n\nDescription:\n- Goal of the meeting:\n- The meeting:\n- Next steps:")
+
+                ("k" "knowhow" entry (file org-default-notes-file)
+                 "* KNOWHOW %?\nDate: %t\nAuthor: %n\nLink(s):\nDescription:")
+
+                ("w" "work" entry (file org-default-notes-file)
+                 "* WORK %?\nDEADLINE: %^{Deadline}t\nAuthor: %n\nLinks:\nDescription:")
+
+                ("j" "journal entry" entry (file org-default-journal-file)
+                 "* JOURNAL %?\nDate: %t\nDescription:")
+                ))
+        )
+#+END_SRC
+
+** Configure refile to make it usable
+
+Without any further configuration, refile does only see the current file as a target.
+That means, you can use refile to move one TODO from one location in the file to another.
+Typical for Emacs, the default configuration does not make too much sense.
+Therefore you need the following configuration to make refile useful at all:
+With this, refile will see only these Org entries which are tagged with REFILETARGET.
+But as tags are normally inherited to their children, and as agenda view also shows tags (which is good!), we need to exclude this REFILETARGET tag from this automatic inheritence.
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-refile-targets '((org-agenda-files :tag . "REFILETARGET")))
+  (setq org-tags-exclude-from-inheritance '("REFILETARGET"))
+#+END_SRC
+
+** Configure the attachment feature
+Org also comes with support for how to attach files and link them to an Org entry.
+The following settings configure this attachment feature to fit better to our workflow.
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-attach-directory "attachments")
+#+END_SRC
+
+** Define the list of known tags
+Setting tags (aka labels) to an entry only makes much sense when the list of possible tags is set and agreed on.
+
+- ogu: organizational unit
+- prs: person (who has the corresponding org entry assigned)
+- sys: system or system component
+- tpc: topic (so, anything else - sometimes it is difficult to separate between systems and topics, e.g. DealWise)
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-tag-alist '(
+
+                        ("prs_ml")
+                        ("prs_ab")
+                        ("prs_cd")
+                        ("prs_ef")
+
+                        ("ogu_de")          ; department in Germany
+                        ("ogu_nl")          ; department in Nethelands
+                        ("ogu_us")          ; department in USA
+
+                        ("sys_erp")
+                        ("sys_intranet")
+                        ("sys_lettershop")
+                        ("sys_publicweb")
+
+                        ("tpc_bank")
+                        ("tpc_billing")
+                        ("tpc_board")
+                        ("tpc_crm")
+                        ("tpc_dev")
+
+  ))
+#+END_SRC
+
+** Extend the agenda view with specific search filters
+#+BEGIN_SRC emacs-lisp
+(setq org-agenda-custom-commands '(
+    ("1" "open TODOs assigned to Martin Leggewie" tags "prs_ml/!-CANCELLED-DONE")
+    ("2" "open TODOs assigned to Person AB" tags "prs_ab/!-CANCELLED-DONE")
+    ("3" "open TODOs assigned to Person CD" tags "prs_cd/!-CANCELLED-DONE")
+    ("4" "open TODOs assigned to Person EF" tags "prs_ef/!-CANCELLED-DONE")
+    ("5" "All entries" todo "*")
+    ("6" "Composite agenda plus all non-final TODO entries" ((agenda "") (alltodo "")))
+))
+(setq org-deadline-warning-days 0)
+(setq org-deadline-past-days 0)
+#+END_SRC

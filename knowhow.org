@@ -1,0 +1,17 @@
+#+TITLE: A collection of all kinds of know how which hopefully has benefit for someone
+* KNOWHOW                                                                      :REFILETARGET:
+** KNOWHOW Org Mode - Organize Your Life In Plain Text!
+Date: [2020-02-27 Do 17:42]
+Author: Bernt Hansen
+Description: Very extensive blog post containing information about how to setup and use Org mode to control tasks, meetings, phone calls
+Link(s): http://doc.norang.ca/org-mode.html
+** KNOWHOW An Agenda for Life With Org Mode
+Date: <2020-02-28 Fr>
+Author: Aaron Bieber
+Description: Describes in good detail how to configure Org agenda view.
+Link(s): https://blog.aaronbieber.com/2016/09/24/an-agenda-for-life-with-org-mode.html
+** KNOWHOW Meine Konfiguration des GNU Emacs / Meine Implementierung einer Aufgabenverwaltung im Emacs Org-mode
+Date: <2020-02-28 Fr>
+Author: Stefan Suenkler
+Description: German blog posts which describe in detail how the author uses Org mode and how he has configured Emacs so that it fits to his way of working.
+Link(s): https://www.suenkler.info/notes/emacs-config/ https://www.suenkler.info/emacs/emacs-orgmode/

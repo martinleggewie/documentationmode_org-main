@@ -70,7 +70,7 @@ And as it also turned out, you need to configure this for Org files separately f
 #+BEGIN_SRC emacs-lisp
 
   (setq org-agenda-files (quote ("~/org/main"
-                                 "~/org/personal")))
+                                 "~/org/user")))
 #+END_SRC
 
 ** Define the various process states and their transitions
@@ -89,7 +89,7 @@ And as it also turned out, you need to configure this for Org files separately f
 
 ** Define the set of capture templates
 
-This section requires two variables to be set in a personal configuration:
+This section requires two variables to be set in a user specific configuration:
 
 * (setq org-default-notes-file "<path to your refile file>")
 * (setq org-default-journal-file "<path to your journal file>")
